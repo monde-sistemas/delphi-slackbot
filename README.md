@@ -15,6 +15,10 @@ You can either use `TSlackbot` reading the URL and channel from the environment 
 - `TSlackbot.Send('#my_channel', 'My message'): Will only read the URL from the environment.
 - `TSlackbot.Send('https://example.slack.com/services/hooks/slackbot?token=example_token', '#my_channel', 'My message')` Will use the URL and channel provided in the params
 
+### OpenSSL
+
+The default implementation uses [Indy](http://www.indyproject.org/index.en.aspx) and [OpenSSL](https://www.openssl.org/) for posting the message, so you must have the `libeay32.dll` and `ssleay32.dll` on your application path.
+
 ## Executing the tests
 
 You need DUnitX do run the tests.
