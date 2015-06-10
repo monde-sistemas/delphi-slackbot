@@ -1,6 +1,10 @@
 # delphi-slackbot
 Delphi library to send messages on slack using slackbot.
 
+## Enabling Slackbot integrations on Slack
+
+Before using this library to post messages to [Slack](https://slack.com/), you must enable the Slackbot integration for your team and get your URL. Please, read the [Slack documentation](https://api.slack.com/slackbot) to learn how to do it.
+
 ## Using
 
 You can either use `TSlackbot` reading the URL and channel from the environment or passing directly to the method.
