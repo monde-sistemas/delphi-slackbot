@@ -11,9 +11,19 @@ You can either use `TSlackbot` reading the URL and channel from the environment 
 
 ### Examples
 
-- `TSlackbot.Send('My message')`: Will read the URL and Channel from the `SLACKBOT_URL` and `SLACKBOT_CHANNEL` environment variables, respectively.
-- `TSlackbot.Send('#my_channel', 'My message')`: Will only read the URL from the environment.
-- `TSlackbot.Send('https://example.slack.com/services/hooks/slackbot?token=example_token', '#my_channel', 'My message')` Will use the URL and channel provided in the params
+Read the URL and Channel from the `SLACKBOT_URL` and `SLACKBOT_CHANNEL` environment variables, respectively:
+```Delphi
+TSlackbot.Send('My message');
+```
+Only read the URL from the environment:
+```Delphi
+TSlackbot.Send('#my_channel', 'My message');
+```
+Use the URL and channel provided in the method params:
+```Delphi
+URL := 'https://example.slack.com/services/hooks/slackbot?token=example_token';
+TSlackbot.Send(URL, '#my_channel', 'My message');
+```
 
 ### OpenSSL
 
