@@ -12,7 +12,8 @@ implementation
 uses
   IdHTTP,
   IdSSLOpenSSL,
-  System.Classes;
+  System.Classes,
+  System.SysUtils;
 
 class function TSlackbotHTTPIndy.Post(const URL, Msg: string): string;
 var
@@ -27,8 +28,7 @@ begin
     HTTP := TIdHTTP.Create(nil);
     SSLHandler := TIdSSLIOHandlerSocketOpenSSL.Create(nil);
 
-    Stream := TStringStream.Create;
-    Stream.WriteString(Msg);
+    Stream := TStringStream.Create(Msg, TEncoding.UTF8);
 
     HTTP.IOHandler := SSLHandler;
     Result := HTTP.Post(URL, Stream)
