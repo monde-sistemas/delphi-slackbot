@@ -24,15 +24,18 @@ type
     procedure Send_ValidURLAndChannel_ChannelEncodedAndAppendedToURL;
     procedure Send_TextWithWindowsLineBreaks_CRRemoveFromMessage;
     procedure Send_URLWithoutHTTPS_ESlackbotError;
-    procedure Send_URLWithoutToken_ESlckbotError;
+    procedure Send_URLWithoutToken_ESlackbotError;
     procedure Send_URLAndChannelConfigInEnvironmentVars_URLAndChannelReadFromEnvironment;
     procedure Send_URLConfigInEnvironmentVars_URLReadFromEnvironment;
+    procedure Send_OnExceptionAssignedAndExceptionRaised_OnExceptionCalledWithException;
+    procedure Send_OnExceptionAssignedAndVariablesNotSet_OnExceptionCalledWithException;
   end;
 
 implementation
 
 uses
-  Winapi.Windows;
+  Winapi.Windows,
+  System.SysUtils;
 
 const
   ValidChannel = '#my_channel';
@@ -77,6 +80,38 @@ begin
   end;
 end;
 
+procedure TSlackbotTests.Send_OnExceptionAssignedAndExceptionRaised_OnExceptionCalledWithException;
+var
+  RaisedException: Exception;
+begin
+  TSlackbot.OnException :=
+    procedure(E: Exception)
+    begin
+      RaisedException := E;
+    end;
+
+  TSlackbot.Send('invalid_url_will_raise_Exception', '', '');
+
+  Assert.IsNotNull(RaisedException, 'OnException event was not called');
+end;
+
+procedure TSlackbotTests.Send_OnExceptionAssignedAndVariablesNotSet_OnExceptionCalledWithException;
+var
+  RaisedException: Exception;
+begin
+  DeleteEnvironmentVariables;
+
+  TSlackbot.OnException :=
+    procedure(E: Exception)
+    begin
+      RaisedException := E;
+    end;
+
+  TSlackbot.Send('boom');
+
+  Assert.IsNotNull(RaisedException, 'OnException event was not called');
+end;
+
 procedure TSlackbotTests.Send_TextWithWindowsLineBreaks_CRRemoveFromMessage;
 begin
   TSlackbot.Send(ValidURL, ValidChannel, 'Line 1' + sLineBreak + 'Line 2');
@@ -93,7 +128,7 @@ begin
     end, ESlackbotError);
 end;
 
-procedure TSlackbotTests.Send_URLWithoutToken_ESlckbotError;
+procedure TSlackbotTests.Send_URLWithoutToken_ESlackbotError;
 begin
   Assert.WillRaise(
     procedure
@@ -120,6 +155,7 @@ begin
   FPostedURL := '';
   FPostedText := '';
   TSlackbot.HTTPPostFunc := PostOK;
+  TSlackbot.OnException := nil;
 end;
 
 initialization
