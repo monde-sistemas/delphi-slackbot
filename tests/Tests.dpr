@@ -12,5 +12,8 @@ uses
   SlackbotHTTPIndy in '..\SlackbotHTTPIndy.pas';
 
 begin
+  {$IFDEF DEBUG}
+  ReportMemoryLeaksOnShutdown := True;
+  {$ENDIF}
   TDunitXTestRunner.RunTests;
 end.

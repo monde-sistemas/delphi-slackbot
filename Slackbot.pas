@@ -3,7 +3,8 @@ unit Slackbot;
 interface
 
 uses
-  System.SysUtils, SlackbotHTTPIndy;
+  System.SysUtils,
+  SlackbotHTTPIndy;
 
 const
   SLACKBOT_CHANNEL = 'SLACKBOT_CHANNEL';
@@ -11,8 +12,12 @@ const
 
 type
   THTTPPostFunc = reference to function(const URL, Msg: string): string;
+  TExceptionEvent = reference to procedure(E: Exception);
+
   TSlackbot = class
   private
+  class var FOnException: TExceptionEvent;
+  class procedure HandleException;
     class function ReadConfigFromEnvironment(const VarName: string): string;
     class procedure ValidateURL(const URL: string);
   public
@@ -20,6 +25,7 @@ type
     class procedure Send(const Text: string); overload;
     class procedure Send(const Channel, Text: string); overload;
     class procedure Send(const URL, Channel, Text: string); overload;
+    class property OnException: TExceptionEvent read FOnException write FOnException;
   end;
 
   ESlackbotError = class(Exception);
@@ -29,12 +35,35 @@ implementation
 uses
   IdURI;
 
+class procedure TSlackbot.HandleException;
+var
+  E: Exception;
+begin
+  E := AcquireExceptionObject;
+  if not Assigned(FOnException) then
+    raise E;
+
+  try
+    try
+      FOnException(E);
+    except
+      // If the exception handler crashes the show must go on
+    end;
+  finally
+    E.Free;
+  end;
+end;
+
 class procedure TSlackbot.Send(const Channel, Text: string);
 var
   URL: string;
 begin
-  URL := ReadConfigFromEnvironment(SLACKBOT_URL);
-  Send(URL, Channel, Text);
+  try
+    URL := ReadConfigFromEnvironment(SLACKBOT_URL);
+    Send(URL, Channel, Text);
+  except
+    HandleException;
+  end;
 end;
 
 class function TSlackbot.ReadConfigFromEnvironment(const VarName: string): string;
@@ -48,23 +77,31 @@ class procedure TSlackbot.Send(const URL, Channel, Text: string);
 var
   URLWithChannel: string;
 begin
-  ValidateURL(URL);
-  URLWithChannel := Format('%s&channel=%s', [URL, TIdURI.ParamsEncode(Channel)]);
+  try
+    ValidateURL(URL);
+    URLWithChannel := Format('%s&channel=%s', [URL, TIdURI.ParamsEncode(Channel)]);
 
-  if not Assigned(HTTPPostFunc) then
-    HTTPPostFunc := TSlackbotHTTPIndy.Post;
+    if not Assigned(HTTPPostFunc) then
+      HTTPPostFunc := TSlackbotHTTPIndy.Post;
 
-  HTTPPostFunc(URLWithChannel, Text.Replace(#13, ''));
+    HTTPPostFunc(URLWithChannel, Text.Replace(#13, ''));
+  except
+    HandleException;
+  end;
 end;
 
 class procedure TSlackbot.Send(const Text: string);
 var
   URL, Channel: string;
 begin
-  URL := ReadConfigFromEnvironment(SLACKBOT_URL);
-  Channel := ReadConfigFromEnvironment(SLACKBOT_CHANNEL);
+  try
+    URL := ReadConfigFromEnvironment(SLACKBOT_URL);
+    Channel := ReadConfigFromEnvironment(SLACKBOT_CHANNEL);
 
-  Send(URL, Channel, Text);
+    Send(URL, Channel, Text);
+  except
+    HandleException;
+  end;
 end;
 
 class procedure TSlackbot.ValidateURL(const URL: string);
