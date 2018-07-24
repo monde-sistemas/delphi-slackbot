@@ -39,7 +39,11 @@ class procedure TSlackbot.HandleException;
 var
   E: Exception;
 begin
+  {$IFDEF VER320}
+  E := AcquireExceptionObject as Exception;
+  {$ELSE}
   E := AcquireExceptionObject;
+  {$ENDIF}
   if not Assigned(FOnException) then
     raise E;
 
