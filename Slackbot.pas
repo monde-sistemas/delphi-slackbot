@@ -4,7 +4,7 @@ interface
 
 uses
   System.SysUtils,
-  SlackbotHTTPIndy;
+  SlackbotHTTPClient;
 
 const
   SLACKBOT_CHANNEL = 'SLACKBOT_CHANNEL';
@@ -16,8 +16,8 @@ type
 
   TSlackbot = class
   private
-  class var FOnException: TExceptionEvent;
-  class procedure HandleException;
+    class var FOnException: TExceptionEvent;
+    class procedure HandleException;
     class function ReadConfigFromEnvironment(const VarName: string): string;
     class procedure ValidateURL(const URL: string);
   public
@@ -33,17 +33,13 @@ type
 implementation
 
 uses
-  IdURI;
+  System.NetEncoding;
 
 class procedure TSlackbot.HandleException;
 var
   E: Exception;
 begin
-  {$IFDEF VER320}
   E := AcquireExceptionObject as Exception;
-  {$ELSE}
-  E := AcquireExceptionObject;
-  {$ENDIF}
   if not Assigned(FOnException) then
     raise E;
 
@@ -83,10 +79,10 @@ var
 begin
   try
     ValidateURL(URL);
-    URLWithChannel := Format('%s&channel=%s', [URL, TIdURI.ParamsEncode(Channel)]);
+    URLWithChannel := Format('%s&channel=%s', [URL, TNetEncoding.URL.Encode(Channel)]);
 
     if not Assigned(HTTPPostFunc) then
-      HTTPPostFunc := TSlackbotHTTPIndy.Post;
+      HTTPPostFunc := TSlackbotHTTPClient.Post;
 
     HTTPPostFunc(URLWithChannel, Text.Replace(#13, ''));
   except
