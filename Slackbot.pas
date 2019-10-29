@@ -16,8 +16,8 @@ type
 
   TSlackbot = class
   private
-  class var FOnException: TExceptionEvent;
-  class procedure HandleException;
+    class var FOnException: TExceptionEvent;
+    class procedure HandleException;
     class function ReadConfigFromEnvironment(const VarName: string): string;
     class procedure ValidateURL(const URL: string);
   public
@@ -39,7 +39,7 @@ class procedure TSlackbot.HandleException;
 var
   E: Exception;
 begin
-  {$IFDEF VER320}
+  {$IF CompilerVersion >= 32.0 }
   E := AcquireExceptionObject as Exception;
   {$ELSE}
   E := AcquireExceptionObject;
